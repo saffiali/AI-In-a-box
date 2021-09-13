@@ -1,0 +1,237 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workflows_translate_orchestrator_name": {
+            "defaultValue": "translate-orchestrator",
+            "type": "String"
+        },
+        "connections_translatorv2_externalid": {
+            "defaultValue": "/subscriptions/f43b0a44-2b34-4168-b3a1-4a6aba468276/resourceGroups/ai-in-abox/providers/Microsoft.Web/connections/translatorv2",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('workflows_translate_orchestrator_name')]",
+            "location": "uksouth",
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "manual": {
+                            "type": "Request",
+                            "kind": "Http",
+                            "inputs": {
+                                "schema": {
+                                    "properties": {
+                                        "BUID": {
+                                            "type": "string"
+                                        },
+                                        "PlatformCode": {
+                                            "type": "string"
+                                        },
+                                        "language": {
+                                            "type": "string"
+                                        },
+                                        "text": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "conditions": [
+                                {
+                                    "expression": "@and(not(equals(triggerBody()?['BUID'],'0')),not(empty(triggerBody()?['BUID'])),not(empty(triggerBody()?['language'])))"
+                                }
+                            ]
+                        }
+                    },
+                    "actions": {
+                        "Switch": {
+                            "runAfter": {},
+                            "cases": {
+                                "Azure": {
+                                    "case": "azure",
+                                    "actions": {
+                                        "AzureTranslationScope": {
+                                            "actions": {
+                                                "Translate_text": {
+                                                    "runAfter": {},
+                                                    "type": "ApiConnection",
+                                                    "inputs": {
+                                                        "body": {
+                                                            "Text": "@triggerBody()?['text']"
+                                                        },
+                                                        "host": {
+                                                            "connection": {
+                                                                "name": "@parameters('$connections')['translatorv2']['connectionId']"
+                                                            }
+                                                        },
+                                                        "method": "post",
+                                                        "path": "/Translate",
+                                                        "queries": {
+                                                            "to": "@triggerBody()?['language']"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "runAfter": {},
+                                            "type": "Scope"
+                                        },
+                                        "FailedResponse": {
+                                            "runAfter": {
+                                                "AzureTranslationScope": [
+                                                    "TimedOut",
+                                                    "Skipped",
+                                                    "Failed"
+                                                ]
+                                            },
+                                            "type": "Response",
+                                            "kind": "Http",
+                                            "inputs": {
+                                                "body": {
+                                                    "errorcode": 2,
+                                                    "language": "@{triggerBody()?['language']}",
+                                                    "message": "Translation Failed in Azure, check platfrom logs or contact your administrator",
+                                                    "translatedText": ""
+                                                },
+                                                "statusCode": 400
+                                            }
+                                        },
+                                        "SuccessResponse": {
+                                            "runAfter": {
+                                                "AzureTranslationScope": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "Response",
+                                            "kind": "Http",
+                                            "inputs": {
+                                                "body": {
+                                                    "errorcode": 0,
+                                                    "language": "@{triggerBody()?['language']}",
+                                                    "message": "TranlationSucceded",
+                                                    "translatedText": "@{body('Translate_text')}"
+                                                },
+                                                "statusCode": 200
+                                            }
+                                        }
+                                    }
+                                },
+                                "GCP": {
+                                    "case": "gcp",
+                                    "actions": {
+                                        "GCPSuccessResponse": {
+                                            "runAfter": {
+                                                "GCPTranslationScope": [
+                                                    "Succeeded"
+                                                ]
+                                            },
+                                            "type": "Response",
+                                            "kind": "Http",
+                                            "inputs": {
+                                                "body": {
+                                                    "errorcode": 0,
+                                                    "language": "@{triggerBody()?['language']}",
+                                                    "message": "TranlationSucceded",
+                                                    "translatedText": "@{body('CallGCPTranslateText')['data']['translations'][0]['translatedText']}"
+                                                },
+                                                "statusCode": 200
+                                            }
+                                        },
+                                        "GCPTranslationScope": {
+                                            "actions": {
+                                                "CallGCPTranslateText": {
+                                                    "runAfter": {},
+                                                    "type": "Http",
+                                                    "inputs": {
+                                                        "method": "POST",
+                                                        "queries": {
+                                                            "format": "text",
+                                                            "key": "AIzaSyCfr8ZCD3nUwtT718288LpXfuTiSozFO-4",
+                                                            "q": "@triggerBody()?['text']",
+                                                            "source": "en",
+                                                            "target": "@triggerBody()?['language']"
+                                                        },
+                                                        "uri": "https://translation.googleapis.com/language/translate/v2/"
+                                                    }
+                                                }
+                                            },
+                                            "runAfter": {},
+                                            "type": "Scope"
+                                        },
+                                        "Response": {
+                                            "runAfter": {
+                                                "GCPTranslationScope": [
+                                                    "TimedOut",
+                                                    "Skipped",
+                                                    "Failed"
+                                                ]
+                                            },
+                                            "type": "Response",
+                                            "kind": "Http",
+                                            "inputs": {
+                                                "body": {
+                                                    "errorcode": 2,
+                                                    "language": "@{triggerBody()?['language']}",
+                                                    "message": "Translation Failed in GCP, check platfrom logs or contact your administrator",
+                                                    "translatedText": ""
+                                                },
+                                                "statusCode": 400
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "default": {
+                                "actions": {
+                                    "MissingPlatfromCodeResponse": {
+                                        "runAfter": {},
+                                        "type": "Response",
+                                        "kind": "Http",
+                                        "inputs": {
+                                            "body": {
+                                                "errorcode": 2,
+                                                "language": "",
+                                                "message": "Invalid Plafrom Code: Choose from azure, aws or gcp codes",
+                                                "translatedText": "gold"
+                                            },
+                                            "statusCode": 404
+                                        }
+                                    }
+                                }
+                            },
+                            "expression": "@triggerBody()?['PlatformCode']",
+                            "type": "Switch"
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "translatorv2": {
+                                "connectionId": "[parameters('connections_translatorv2_externalid')]",
+                                "connectionName": "translatorv2",
+                                "id": "/subscriptions/f43b0a44-2b34-4168-b3a1-4a6aba468276/providers/Microsoft.Web/locations/uksouth/managedApis/translatorv2"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
