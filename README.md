@@ -12,3 +12,5 @@ Since each cloud provider has diffrent requirements like authentecation, files l
 3) APIs/Actions Discovery
 This wehre end-user discover and call all the back-end API. Business monitoring, Authentication, security will be done on that layer.
 
+
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fsaffiali%2FAI-In-a-box%2Fmain%2Fdeploy%2FtranslationOrchestartor.template.json)
