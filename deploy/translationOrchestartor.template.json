@@ -4,12 +4,13 @@
     "parameters": {
         "LogicAppName": "AI-Translate-Orchestrartor",
         "LogicAppLocation": "uksouth",
+        "ResourceGroup":"rg-ai-in-abox",
         "workflows_translate_orchestrator_name": {
             "defaultValue": "translate-orchestrator",
             "type": "String"
         },
         "connections_translatorv2_externalid": {
-            "defaultValue": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('LogicAppLocation'), '/managedApis/', 'translatorv2')]",
+            "defaultValue": "[concat('/subscriptions/', subscription().id, '/resourceGroups/', parameters('ResourceGroup'), '/providers/Microsoft.Web/connections/', 'translatorv2')]",
             "type": "String"
         }
     },
@@ -228,7 +229,7 @@
                             "translatorv2": {
                                 "connectionId": "[parameters('connections_translatorv2_externalid')]",
                                 "connectionName": "translatorv2",
-                                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('LogicAppLocation'), '/managedApis/', 'translatorv2')]"
+                                "id": "[concat('/subscriptions/', subscription().id, '/resourceGroups/', parameters('ResourceGroup'), '/providers/Microsoft.Web/connections/', 'translatorv2')]"
                             }
                         }
                     }
