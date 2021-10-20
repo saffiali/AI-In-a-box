@@ -2,9 +2,18 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "LogicAppName": "AI-Translate-Orchestrartor",
-        "LogicAppLocation": "uksouth",
-        "ResourceGroup":"rg-ai-in-abox",
+        "LogicAppName": {
+            "defaultValue": "AI-Translate-Orchestrator",
+            "type": "String"
+        },
+        "LogicAppLocation": {
+            "defaultValue": "uksouth",
+            "type": "String"
+        },
+        "ResourceGroup":{
+            "defaultValue": "uksouth",
+            "type": "String"
+        },
         "workflows_translate_orchestrator_name": {
             "defaultValue": "translate-orchestrator",
             "type": "String"
