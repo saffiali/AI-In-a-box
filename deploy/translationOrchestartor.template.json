@@ -2,12 +2,14 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "LogicAppName": "AI-Translate-Orchestrartor",
+        "LogicAppLocation": "uksouth",
         "workflows_translate_orchestrator_name": {
             "defaultValue": "translate-orchestrator",
             "type": "String"
         },
         "connections_translatorv2_externalid": {
-            "defaultValue": "/subscriptions/f43b0a44-2b34-4168-b3a1-4a6aba468276/resourceGroups/ai-in-abox/providers/Microsoft.Web/connections/translatorv2",
+            "defaultValue": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('LogicAppLocation'), '/managedApis/', 'translatorv2')]",
             "type": "String"
         }
     },
@@ -226,7 +228,7 @@
                             "translatorv2": {
                                 "connectionId": "[parameters('connections_translatorv2_externalid')]",
                                 "connectionName": "translatorv2",
-                                "id": "/subscriptions/f43b0a44-2b34-4168-b3a1-4a6aba468276/providers/Microsoft.Web/locations/uksouth/managedApis/translatorv2"
+                                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('LogicAppLocation'), '/managedApis/', 'translatorv2')]"
                             }
                         }
                     }
