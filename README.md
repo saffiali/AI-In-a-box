@@ -15,5 +15,5 @@ This wehre end-user discover and call all the back-end API. Business monitoring,
 # Deployment steps:
 1) Create a Translator Service in a resource group
 2) Click: [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fsaffiali%2FAI-In-a-box%2Fmain%2Fdeploy%2FtranslationOrchestartor.template.json)
-3) Pass the resource group name, sunbscription ID and Azure Translator API key to deployment parameters.
+3) Pass the resource group name, subscription ID and Azure Translator API key to deployment parameters.
 
