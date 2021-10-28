@@ -2,9 +2,6 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "ResourceGroup":{
-            "value": "rg-ai-in-abox"
-        },
         "workflows_translate_orchestrator_name": {
             "value": null
         },
